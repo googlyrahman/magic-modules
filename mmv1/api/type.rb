@@ -408,10 +408,6 @@ module Api
       @required_with
     end
 
-    def type
-      self.class.name.split('::').last
-    end
-
     def parent
       @__parent
     end

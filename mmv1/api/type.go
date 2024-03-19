@@ -324,10 +324,13 @@ func (t *Type) Lineage() string {
 // Prints the access path of the field in the configration eg: metadata.0.labels
 // The only intended purpose is to get the value of the labes field by calling d.Get().
 // func (t *Type) terraform_lineage() {
-// return name&.underscore if __parent.nil? || __parent.flatten_object
+func (t *Type) TerraformLineage() string {
+	if t.ParentMetadata == nil || t.ParentMetadata.FlattenObject {
+		return google.Underscore(t.Name)
+	}
 
-// "//{__parent.terraform_lineage}.0.//{name&.underscore}"
-// }
+	return fmt.Sprintf("%s.0.%s", t.ParentMetadata.TerraformLineage(), google.Underscore(t.Name))
+}
 
 // func (t *Type) to_json(opts) {
 // ignore fields that will contain references to parent resources and
@@ -394,10 +397,13 @@ func (t *Type) Lineage() string {
 
 // Returns list of properties that are in conflict with this property.
 // func (t *Type) conflicting() {
-// return [] unless @__resource
+func (t *Type) Conflicting() []string {
+	if t.ResourceMetadata == nil {
+		return []string{}
+	}
 
-// @conflicts
-// }
+	return t.Conflicts
+}
 
 // Checks that all properties that needs at least one of their fields actually exist.
 // This currently just returns if empty, because we don't want to do the check, since
@@ -410,10 +416,13 @@ func (t *Type) Lineage() string {
 
 // Returns list of properties that needs at least one of their fields set.
 // func (t *Type) at_least_one_of_list() {
-// return [] unless @__resource
+func (t *Type) AtLeastOneOfList() []string {
+	if t.ResourceMetadata == nil {
+		return []string{}
+	}
 
-// @at_least_one_of
-// }
+	return t.AtLeastOneOf
+}
 
 // Checks that all properties that needs exactly one of their fields actually exist.
 // This currently just returns if empty, because we don't want to do the check, since
@@ -426,10 +435,13 @@ func (t *Type) Lineage() string {
 
 // Returns list of properties that needs exactly one of their fields set.
 // func (t *Type) exactly_one_of_list() {
-// return [] unless @__resource
+func (t *Type) ExactlyOneOfList() []string {
+	if t.ResourceMetadata == nil {
+		return []string{}
+	}
 
-// @exactly_one_of
-// }
+	return t.ExactlyOneOf
+}
 
 // Checks that all properties that needs required with their fields actually exist.
 // This currently just returns if empty, because we don't want to do the check, since
@@ -442,18 +454,17 @@ func (t *Type) Lineage() string {
 
 // Returns list of properties that needs required with their fields set.
 // func (t *Type) required_with_list() {
-//   // return [] unless @__resource
+func (t *Type) RequiredWithList() []string {
+	if t.ResourceMetadata == nil {
+		return []string{}
+	}
 
-//   // @required_with
-// }
+	return t.RequiredWith
+}
 
-// func (t *Type) type() {
-//   // self.class.name.split('::').last
-// }
-
-// func (t *Type) parent() {
-//   // @__parent
-// }
+func (t *Type) Parent() *Type {
+	return t.ParentMetadata
+}
 
 // def min_version
 func (t *Type) MinVersionObj() *product.Version {
@@ -514,13 +525,21 @@ func (t *Type) IsA(clazz string) bool {
 //   // super
 // }
 
-// func (t *Type) removed() {
-//   // !(@removed_message.nil? || @removed_message == '')
-// }
+// Returns nested properties for this property.
+// def nested_properties
+func (t *Type) NestedProperties() []*Type {
+	return nil
+}
 
-// func (t *Type) deprecated() {
-//   // !(@deprecation_message.nil? || @deprecation_message == '')
-// }
+// def removed?
+func (t *Type) Removed() bool {
+	return t.RemovedMessage != ""
+}
+
+// def deprecated?
+func (t *Type) deprecated() bool {
+	return t.DeprecationMessage != ""
+}
 
 // // private
 
